@@ -16,9 +16,9 @@
    [X]  #1: Introduction
    [X]  #2: History & Early Years
    [X]  #3: Playstation Hardware
-   [-]  #4: MIPS Assembly
-   [-]  #5: Emulation & Debugger
-   [-]  #6: The MIPS Pipeline
+   [X]  #4: MIPS Assembly
+   [X]  #5: Emulation & Debugger
+   [X]  #6: The MIPS Pipeline
    [-]  #7: Warm Up Exercises
    [-]  #8: Subroutines & Negative Numbers
    [-]  #9: CISC vs RISC
@@ -170,10 +170,143 @@
        + 0x1F801824 - write - MDEC control/reset register
        + 0x1F801820 - read  - MDEC data/response register
        + 0x1F801824 - read  - MDEC status register
-      
-      
+
+   - MIPS Registers
+     r0  = $zero
+     r1  = $at
+     r2  = $v0
+     r3  = $v1
+     r4  = $a0
+     r5  = $a1
+     r6  = $a2
+     r7  = $a3
+     r8  = $t0
+     r9  = $t1
+     r10 = $t2
+     r11 = $t3
+     r12 = $t4
+     r13 = $t5
+     r14 = $t6
+     r15 = $t7
+     r16 = $s0
+     r17 = $s1
+     r18 = $s2
+     r19 = $s3
+     r20 = $s4
+     r21 = $s5
+     r22 = $s6
+     r23 = $s7
+     r24 = $t8
+     r25 = $t9
+     r26 = $k0
+     r27 = $k1
+     r28 = $gp
+     r29 = $sp
+     r30 = $fp
+     r31 = $ra
+
+   - Load instructions
+     + Load immediate:
+       li $t0,10
+       li $t0,0xFE
+     + Load address:
+       la $t2,Label
+     + Load byte (load one byte from address with offset):
+       lb $t3,0x8000($t0)
+     + Load byte (insigned):
+       lbu $t3,0x8000($t0)
+     + Load upper immediate:
+       lui $t4,0x8001
+     + Load half:
+       lh ...
+     + Load word:
+       lw ...
+   
+   - Size of MIPS Types
+     + BYTE, 1 byte, 8 bits
+     + HALF, 2 bytes, 16 bits
+     + WORD, 4 bytes, 32 bits
+     + DWORD, 8 bytes, 64 bits
+
+   - Size of relevant C types
+     + char, 1 byte, 8 bits
+     + short, 2 bytes, 16 bits
+     + int, 4 bytes, 32 bits
+     + long, 4 bytes, 32 bits
+     + long long, 8 bytes, 64 bits
+
+  - Store instructions
+    + Store word (store one word with offset):
+      sw $t1,0x1810($t0)
+    + Store half-word:
+      sh ...
+    + Store byte:
+      sb ...
+
+  - Add & subtract instructions
+    + add $t0, $t1, $t2  // t0 = t1 + t2
+    + sub $a0, $a0, $a2  // a0 = a0 - a2
+    + addi $t0, $t1, 5   // t0 = t1 + 5
+    + addi $s0, $s1, -5  // s0 = s1 - 5
+    + addu $s0, $s1, $s1 // s0 = s1 + s1 (unsigned)
+    + addiu $s0, $s1, 7  // s0 = s1 + 7 (unsigned)
+
+  - Jump instructions
+    + Unconditional jump:
+      j Label
+      nop
+    + Jump to register:
+      jr $a3
+      nop
+    + Jump and link:
+      jal SubroutineName
+      nop
 
 
-   - ...
-   - ...
+  - Branch instructions
+    + Branch if equals:
+      beq $t0, $t1, Label
+      nop
+    + Branch if not equals:
+      bne $t0, $t1, Label
+      nop
+    + Branch if less than (signed / unsigned):
+      blt ... / bltu ...
+      nop
+    + Branch if grater than (signed / unsigned):
+      bgt ... / bgtu ...
+      nop
+    + Branch if less or equals (signed / unsigned):
+      ble ... / bleu ...
+      nop
+    + Branch of greater or equals (signed / unsigned):
+      bge ... / bgeu ...
+      nop
 
+  - ARMIPS (assembler): https://github.com/Kingcom/armips
+
+  - PCSX-Redux (ps1 emulator): https://github.com/grumpycoders/pcsx-redux
+
+  - bin2exe.py (.bin to-ps-exe converter): https://github.com/ARM9/psxdev/blob/master/libpsx/tools/bin2exe.py
+
+  - Make for Windows: https://gnuwin32.sourceforge.net/packages/make.htm
+
+  - Running a program:
+    1. armips program.s
+    2. python bin2exe.py program.bin program.ps-exe
+    3. load program.ps-exe in pcsx-redux
+
+  - Loading a program in PCSX-Redux and running it step by step:
+    + Debug -> Show Logs
+    + Debug -> CPU -> Show Registers
+    + Debug -> CPU -> Show Assembly
+    + Debug -> CPU -> Memory Editors -> Memory Editor #1
+    + Assembly -> Enable Debugger
+    + Configuration -> Emulation -> Disable Dynarec CPU
+
+  - MIPS Pipeline
+    + Fetch -> Decode -> Execute -> Memory -> Write
+    + While a typical instruction takes 3-5 cycles, a pipelined processor targets 1 cycle per instruction
+    + But this pipeline approach can cause some problems when branching
+    + Or when performing operations on a register right after a load from memory
+    + These problems can be solved by adding delay slots (nop)
