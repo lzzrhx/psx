@@ -19,7 +19,7 @@
    [X]  #4: MIPS Assembly
    [X]  #5: Emulation & Debugger
    [X]  #6: The MIPS Pipeline
-   [-]  #7: Warm Up Exercises
+   [X]  #7: Warm Up Exercises
    [-]  #8: Subroutines & Negative Numbers
    [-]  #9: CISC vs RISC
    [-] #10: Graphics System
