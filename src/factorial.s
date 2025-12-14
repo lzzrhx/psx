@@ -2,12 +2,20 @@
 .create "factorial.bin", 0x80010000
 .org 0x80010000
 Main:
-    li $t0, 5
+    li $a0, 6
+    jal Factorial
+    nop
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Subroutine to compute the factorial of a number
+;; Argument: num ($a0)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+Factorial:
     li $t1, 1
     li $t3, 1
     li $t4, 1
 WhileOuter:
-    bgt $t1, $t0, WhileOuterEnd
+    bgt $t1, $a0, WhileOuterEnd
     nop
     li $t2, 0
     li $t4, 0
@@ -25,5 +33,6 @@ WhileInnerEnd:
     nop
 WhileOuterEnd:
     move $v0, $t4
-End:
+    jr $ra
+
 .close

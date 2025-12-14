@@ -20,7 +20,7 @@
    [X]  #5: Emulation & Debugger
    [X]  #6: The MIPS Pipeline
    [X]  #7: Warm Up Exercises
-   [-]  #8: Subroutines & Negative Numbers
+   [X]  #8: Subroutines & Negative Numbers
    [-]  #9: CISC vs RISC
    [-] #10: Graphics System
    [-] #11: Rendering Polygons
@@ -310,3 +310,11 @@
     + But this pipeline approach can cause some problems when branching
     + Or when performing operations on a register right after a load from memory
     + These problems can be solved by adding delay slots (nop)
+
+  - Sign Extension (8-bit to 16 -bit example)
+    + If the number is positive:
+                          0 0 1 1 1 0 0 1
+      ->  0 0 0 0 0 0 0 0 0 0 1 1 1 0 0 1
+    + If the number is negative (two's complement):
+                          1 0 1 1 1 0 0 1
+      ->  1 1 1 1 1 1 1 1 1 0 1 1 1 0 0 1
