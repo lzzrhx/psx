@@ -21,7 +21,7 @@
    [X]  #6: The MIPS Pipeline
    [X]  #7: Warm Up Exercises
    [X]  #8: Subroutines & Negative Numbers
-   [-]  #9: CISC vs RISC
+   [X]  #9: CISC vs RISC
    [-] #10: Graphics System
    [-] #11: Rendering Polygons
    [-] #12: Memory Alignment
