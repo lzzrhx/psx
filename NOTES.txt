@@ -23,7 +23,7 @@
    [X]  #8: Subroutines & Negative Numbers
    [X]  #9: CISC vs RISC
    [X] #10: Graphics System
-   [-] #11: Rendering Polygons
+   [X] #11: Rendering Polygons
    [-] #12: Memory Alignment
    [-] #13: Copying Data to VRAM
    [-] #14: Moving from Assembly to C
