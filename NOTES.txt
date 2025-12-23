@@ -24,7 +24,7 @@
    [X]  #9: CISC vs RISC
    [X] #10: Graphics System
    [X] #11: Rendering Polygons
-   [-] #12: Memory Alignment
+   [X] #12: Memory Alignment
    [-] #13: Copying Data to VRAM
    [-] #14: Moving from Assembly to C
    [-] #15: Psy-Q Data Types
