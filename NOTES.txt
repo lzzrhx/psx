@@ -347,4 +347,4 @@
       + ctrl+shift+p -> PSX.Dev, show panel -> templates: Psy-Q SDK (Psy-Q Cube (install recommended tools)) -> reboot -> create
       + to build: ctrl+shift+p -> PSX.Dev build debug
       + to run: ctrl+shift+p -> launch PSXC-Redux
-      
+
