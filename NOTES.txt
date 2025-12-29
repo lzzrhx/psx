@@ -33,7 +33,7 @@
    [X] #18: Fixed-Point Math
    [X] #19: GTE Inline Instructions
    [X] #20: Controller Input
-   [-] #21: Linking Multiple Files
+   [X] #21: Linking Multiple Files
    [-] #22: Camera Transformation
    [-] #23: CD-ROM Access
    [-] #24: Textured Polygons

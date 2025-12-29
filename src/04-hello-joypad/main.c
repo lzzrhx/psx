@@ -3,6 +3,8 @@
 #include <libgte.h>
 #include <libetc.h>
 #include <libgpu.h>
+#include "globals.h"
+#include "display.h"
 #include "joypad.h"
 
 #define VIDEO_MODE 0
@@ -11,7 +13,6 @@
 #define SCREEN_CENTER_X (SCREEN_RES_X >> 1)
 #define SCREEN_CENTER_Y (SCREEN_RES_Y >> 1)
 #define SCREEN_Z 320
-#define OT_LENGTH 2048
 
 
 
@@ -41,17 +42,6 @@ typedef struct Floor {
 ///////////////////////////////////////////////////////////////////////////////
 // Declarations and global variables
 ///////////////////////////////////////////////////////////////////////////////
-typedef struct {
-    DRAWENV draw[2];
-    DISPENV disp[2];
-} DoubleBuff;
-
-DoubleBuff screen;
-u_short currbuff;
-u_long ot[2][OT_LENGTH]; // Ordering table
-char primbuff[2][2048]; // Primitive buffer
-char *nextprim; // Next primitive pointer
-
 POLY_G4 *polyg4;
 POLY_G3 *polyg3;
 
@@ -102,56 +92,6 @@ Floor floor = {
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// Initialize display mode and setup double buffering
-///////////////////////////////////////////////////////////////////////////////
-void ScreenInit(void) {
-    // Reset GPU
-    ResetGraph(0);
-    // Set the display area of the first buffer
-    SetDefDispEnv(&screen.disp[0], 0,   0, 320, 240);
-    SetDefDrawEnv(&screen.draw[0], 0, 240, 320, 240);
-    // Set the display area of the second buffer
-    SetDefDispEnv(&screen.disp[1], 0, 240, 320, 240);
-    SetDefDrawEnv(&screen.draw[1], 0,   0, 320, 240);
-    // Set the back/drawing buffer
-    screen.draw[0].isbg = 1;
-    screen.draw[1].isbg = 1;
-    // Set the background clear color
-    setRGB0(&screen.draw[0], 28, 28, 28);
-    setRGB0(&screen.draw[1], 28, 28, 28);
-    // Set the current initial buffer
-    currbuff = 0;
-    PutDispEnv(&screen.disp[currbuff]);
-    PutDrawEnv(&screen.draw[currbuff]);
-    // Initialize and setup the GTE geometry offsets
-    InitGeom();
-    SetGeomOffset(SCREEN_CENTER_X, SCREEN_CENTER_Y);
-    SetGeomScreen(SCREEN_Z);
-    // Enable display
-    SetDispMask(1);
-}
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-// Draw the current frame primitives in the ordering table
-///////////////////////////////////////////////////////////////////////////////
-void DisplayFrame(void) {
-    DrawSync(0);
-    VSync(0);
-    PutDispEnv(&screen.disp[currbuff]);
-    PutDrawEnv(&screen.draw[currbuff]);
-    // Draw the ordering table for the current buffer
-    DrawOTag(ot[currbuff] + OT_LENGTH-1);
-    // Swap current buffer
-    currbuff = !currbuff;
-    // Reset next primitive pointer
-    nextprim = primbuff[currbuff];
-}
-
-
-
-///////////////////////////////////////////////////////////////////////////////
 // Setup function that is called once at the beginning of the execution
 ///////////////////////////////////////////////////////////////////////////////
 void Setup(void) {
@@ -159,7 +99,7 @@ void Setup(void) {
     // Initialize the joypad
     JoyPadInit();
     // Reset next primitive pointer
-    nextprim = primbuff[currbuff];
+    ResetNextPrim(GetCurrBuff());
 }
 
 
@@ -171,7 +111,7 @@ void Update(void) {
     int i, nclip;
     long otz, p, flg;
     // Clear ordering table
-    ClearOTagR(ot[currbuff], OT_LENGTH);
+    EmptyOT(GetCurrBuff());
     // Update the state of the controller
     JoyPadUpdate();
     // 
@@ -188,7 +128,7 @@ void Update(void) {
     SetRotMatrix(&world);
     SetTransMatrix(&world);
     for (i = 0; i < 6; i += 3) {
-        polyg3 = (POLY_G3*) nextprim;
+        polyg3 = (POLY_G3*) GetNextPrim();
         setPolyG3(polyg3);
         setRGB0(polyg3, 255, 0, 255);
         setRGB1(polyg3, 0, 255, 255);
@@ -205,9 +145,9 @@ void Update(void) {
         if (nclip <= 0) {
             continue;
         }
-        if ((otz > 0) && (otz < OT_LENGTH)) {
-            addPrim(ot[currbuff][otz], polyg3);
-            nextprim += sizeof(POLY_G3);
+        if ((otz > 0) && (otz < OT_LEN)) {
+            addPrim(GetOTAt(GetCurrBuff(), otz), polyg3);
+            IncrementNextPrim(sizeof(POLY_G3));
         }
     }
     // Update the floor rotation
@@ -230,7 +170,7 @@ void Update(void) {
     SetRotMatrix(&world);
     SetTransMatrix(&world);
     for (i = 0; i < 6 * 4; i += 4) {
-        polyg4 = (POLY_G4*) nextprim;
+        polyg4 = (POLY_G4*) GetNextPrim();
         setPolyG4(polyg4);
         setRGB0(polyg4, 255,   0, 255);
         setRGB1(polyg4, 255, 255,   0);
@@ -250,9 +190,9 @@ void Update(void) {
         if (nclip <= 0) {
             continue;
         }
-        if ((otz > 0) && (otz < OT_LENGTH)) {
-            addPrim(ot[currbuff][otz], polyg4);
-            nextprim += sizeof(POLY_G4);
+        if ((otz > 0) && (otz < OT_LEN)) {
+            addPrim(GetOTAt(GetCurrBuff(), otz), polyg4);
+            IncrementNextPrim(sizeof(POLY_G4));
         }
     }
 }
