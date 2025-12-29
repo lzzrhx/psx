@@ -3,6 +3,7 @@
 #include <libgte.h>
 #include <libetc.h>
 #include <libgpu.h>
+//#include "inline_n.h"
 
 #define VIDEO_MODE 0
 #define SCREEN_RES_X 320
@@ -11,8 +12,6 @@
 #define SCREEN_CENTER_Y (SCREEN_RES_Y >> 1)
 #define SCREEN_Z 320
 #define OT_LENGTH 2048
-#define NUM_VERTICES 8
-#define NUM_FACES 6
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -53,7 +52,7 @@ char primbuff[2][2048]; // Primitive buffer
 char *nextprim; // Next primitive pointer
 
 POLY_G4 *polyg4;
-POLY_F3 *polyf3;
+//POLY_F3 *polyf3;
 
 MATRIX world = {0};
 
@@ -180,6 +179,32 @@ void Update(void) {
         polyf3 = (POLY_F3*) nextprim;
         setPolyF3(polyf3);
         setRGB0(polyf3, 255, 0, 255);
+        *//*
+        // Load the 3 vertices into the GTE registers
+        gte_ldv0(&floor.vertices[floor.faces[i + 0]]);
+        gte_ldv1(&floor.vertices[floor.faces[i + 1]]);
+        gte_ldv2(&floor.vertices[floor.faces[i + 2]]);
+        // Perform RTPT with the 3 vertices
+        gte_rtpt();
+        // Perform the Nclip calculation
+        gte_nclip();
+        gte_stopz(&nclip);
+        // Only proceed if the normal of the face is facing the viewer
+        if (nclip >= 0) {
+            // Store the transformed & projected points into the poly primitive
+            gte_stsxy3(&polyf3->x0, &polyf3->x1, &polyf3->x2);
+
+            // Compute the OTz
+            gte_avsz3();
+            gte_stotz(&otz);
+
+            // Sort the triange in the OT
+            if ((otz > 0) && (otz < OT_LENGTH)) {
+                addPrim(ot[currbuff][otz], polyf3);
+                nextprim += sizeof(POLY_F3);
+            }
+        }
+        *//*
         nclip = RotAverageNclip3(
             &floor.vertices[floor.faces[i]],
             &floor.vertices[floor.faces[i+1]],
@@ -196,6 +221,7 @@ void Update(void) {
             addPrim(ot[currbuff][otz], polyf3);
             nextprim += sizeof(POLY_F3);
         }
+        *//*
     }
     // Update the floor rotation
     floor.rotation.vy += 5;
@@ -224,6 +250,35 @@ void Update(void) {
         setRGB1(polyg4, 255, 255,   0);
         setRGB2(polyg4,   0, 255, 255);
         setRGB3(polyg4,   0, 255,   0);
+        /*
+        // Load the first 3 vertices (the GTE can only perform a maimum of 3 vectors at a time)
+        gte_ldv0(&cube.vertices[cube.faces[i + 0]]);
+        gte_ldv1(&cube.vertices[cube.faces[i + 1]]);
+        gte_ldv2(&cube.vertices[cube.faces[i + 2]]);
+        // Perform RTPT with the first 't'hree vertices
+        gte_rtpt();
+        // We can perform the nclip check here already since all vertices of a quad are coplanar
+        gte_nclip();
+        gte_stopz(&nclip);
+        if (nclip >= 0) {
+            // Store/save the transformed projected coord of the first vertex
+            gte_stsxy0(&polyg4->x0);
+            // Load the last 4th vertex
+            gte_ldv0(&cube.vertices[cube.faces[i + 3]]);
+            // Perform RTPS with the 's'ingle remaining 4th vertex
+            gte_rtps();
+            // Store the transformed last vertices
+            gte_stsxy3(&polyg4->x1, &polyg4->x2, &polyg4->x3);
+            // Compute the OTz
+            gte_avsz4();
+            gte_stotz(&otz);
+            // Sort the quad in the OT
+            if ((otz > 0) && (otz < OT_LENGTH)) {
+                addPrim(ot[currbuff][otz], polyg4);
+                nextprim += sizeof(POLY_G4);
+            }
+        }
+        */
         nclip = RotAverageNclip4(
             &cube.vertices[cube.faces[i]], 
             &cube.vertices[cube.faces[i+1]], 

@@ -31,7 +31,7 @@
    [X] #16: Introduction to 3D Graphics
    [X] #17: The GTE Coprocessor
    [X] #18: Fixed-Point Math
-   [-] #19: GTE Inline Instructions
+   [X] #19: GTE Inline Instructions
    [-] #20: Controller Input
    [-] #21: Linking Multiple Files
    [-] #22: Camera Transformation
