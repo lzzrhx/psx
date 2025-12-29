@@ -27,7 +27,7 @@
    [X] #12: Memory Alignment
    [X] #13: Copying Data to VRAM
    [X] #14: Moving from Assembly to C
-   [-] #15: Psy-Q Data Types
+   [X] #15: Psy-Q Data Types
    [-] #16: Introduction to 3D Graphics
    [-] #17: The GTE Coprocessor
    [-] #18: Fixed-Point Math
@@ -347,3 +347,28 @@
       + ctrl+shift+p -> PSX.Dev, show panel -> templates: Psy-Q SDK (Psy-Q Cube (install recommended tools)) -> reboot -> create
       + to build: ctrl+shift+p -> PSX.Dev build debug
       + to run: ctrl+shift+p -> launch PSXC-Redux
+
+  - Install instructions for Windows XP:
+    + Install VirtualBox -> Add Windows XP (4GB RAM/20GB HDD)
+    + Install Mypal web browser (https://www.mypal-browser.org/)
+    + Install Programmer's Notepad 2.4.2.1440 (simple editor)
+    + Install Code::Blocks 8.02 (IDE)
+    + psxdev.net: (https://web.archive.org/web/20250418044622/https://www.psxdev.net/downloads.html)
+      + Download PSY-Q SDK (https://drive.google.com/file/d/0B_GAaDjR83rLZGVaZ2pvV2tjSVE/view?resourcekey=0-KKkvWLASG3gmlP3jNqZskQ)
+      + Download Programmers Tool CD 2.2 (https://drive.google.com/file/d/0B_GAaDjR83rLOGp3aTYzc0haVGs/view?resourcekey=0-uyLemqoC68cNjP5w6dYeQg)
+    + Install no$psx v2.2 Windows 32bit version (http://problemkaputt.de/no$psx.zip)
+    + Extract PSY-Q to C:\psyq
+    + Control Panel -> Classic View -> System -> Advanced -> Environment Variables. Add:
+      + PATH -> ... ;C:\psyq\bin
+      + PSX_PATH -> C:\psyq\bin
+      + LIBRARY_PATH -> C:\psyq\lib
+      + C_INCLUDE_PATH -> C:\psyq\include
+      + PSYQ_PATH -> C:\psyq\bin
+      + COMPILER_PATH -> C:\psyq\bin
+      + GO32 -> DPMISTACK 1000000
+      + GO32TMP -> C:\WINDOWS\TEMP
+      + TMP -> C:\WINDOWS\TEMP
+  
+  - PSY-Q tools:
+    + ccpsx - Compiler
+    + psymake - Make for PSY-Q
