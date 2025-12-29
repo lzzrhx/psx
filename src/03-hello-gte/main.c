@@ -10,33 +10,31 @@
 #define SCREEN_CENTER_X (SCREEN_RES_X >> 1)
 #define SCREEN_CENTER_Y (SCREEN_RES_Y >> 1)
 #define SCREEN_Z 320
-#define OT_LENGTH 256
+#define OT_LENGTH 2048
 #define NUM_VERTICES 8
 #define NUM_FACES 6
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// Cube vertices and face indices
+// Vertices and face indices
 ///////////////////////////////////////////////////////////////////////////////
-SVECTOR vertices[] = {
-    { -128, -128, -128},
-    {  128, -128, -128},
-    {  128, -128,  128},
-    { -128, -128,  128},
-    { -128,  128, -128},
-    {  128,  128, -128},
-    {  128,  128,  128},
-    { -128,  128,  128}
-};
+typedef struct Cube {
+    SVECTOR rotation;
+    VECTOR position;
+    VECTOR scale;
+    VECTOR vel;
+    VECTOR acc;
+    SVECTOR vertices[8];
+    short faces[24];
+} Cube;
 
-short faces[] = {
-    3, 2, 0, 1, // top
-    0, 1, 4, 5, // front
-    4, 5, 7, 6, // bottom
-    1, 2, 5, 6, // right
-    2, 3, 6, 7, // back
-    3, 0, 7, 4  // left
-};
+typedef struct Floor {
+    SVECTOR rotation;
+    VECTOR position;
+    VECTOR scale;
+    SVECTOR vertices[4];
+    short faces[6];
+} Floor;
 
 
 
@@ -54,13 +52,52 @@ u_long ot[2][OT_LENGTH]; // Ordering table
 char primbuff[2][2048]; // Primitive buffer
 char *nextprim; // Next primitive pointer
 
-POLY_G4 *poly;
+POLY_G4 *polyg4;
+POLY_F3 *polyf3;
 
-SVECTOR rotation = {0, 0, 0};
-VECTOR translation = {0, 0, 900};
-VECTOR scale = {ONE, ONE, ONE};
 MATRIX world = {0};
 
+Cube cube = {
+    {0, 0, 0},
+    {0, -400, 1800},
+    {ONE, ONE, ONE},
+    {0, 0, 0},
+    {0, 1, 0},
+    {
+        { -128, -128, -128},
+        {  128, -128, -128},
+        {  128, -128,  128},
+        { -128, -128,  128},
+        { -128,  128, -128},
+        {  128,  128, -128},
+        {  128,  128,  128},
+        { -128,  128,  128},
+    },
+    {
+        3, 2, 0, 1,
+        0, 1, 4, 5,
+        4, 5, 7, 6,
+        1, 2, 5, 6,
+        2, 3, 6, 7,
+        3, 0, 7, 4,
+    },
+};
+
+Floor floor = {
+    {0, 0, 0},
+    {0, 450, 1800},
+    {ONE, ONE, ONE},
+    {
+        {-900, 0, -900},
+        {-900, 0,  900},
+        { 900, 0, -900},
+        { 900, 0,  900},
+    },
+    {
+        0, 1, 2,
+        1, 3, 2,
+    },
+};
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -79,8 +116,8 @@ void ScreenInit(void) {
     screen.draw[0].isbg = 1;
     screen.draw[1].isbg = 1;
     // Set the background clear color
-    setRGB0(&screen.draw[0], 63, 0, 127);
-    setRGB0(&screen.draw[1], 63, 0, 127);
+    setRGB0(&screen.draw[0], 28, 28, 28);
+    setRGB0(&screen.draw[1], 28, 28, 28);
     // Set the current initial buffer
     currbuff = 0;
     PutDispEnv(&screen.disp[currbuff]);
@@ -125,54 +162,91 @@ void Setup(void) {
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// Update function
+// Update function called every frame
 ///////////////////////////////////////////////////////////////////////////////
 void Update(void) {
     int i, nclip;
     long otz, p, flg;
-    ClearOTagR(ot[currbuff], OT_LENGTH); // Clear ordering table
-    RotMatrix(&rotation, &world);
-    TransMatrix(&world, &translation);
-    ScaleMatrix(&world, &scale);
+    // Clear ordering table
+    ClearOTagR(ot[currbuff], OT_LENGTH);
+    /*
+    // Draw the floor
+    RotMatrix(&floor.rotation, &world);
+    TransMatrix(&world, &floor.position);
+    ScaleMatrix(&world, &floor.scale);
     SetRotMatrix(&world);
     SetTransMatrix(&world);
-    // Loop all triangle faces
-    for (i = 0; i < NUM_FACES * 4; i += 4) {
-        poly = (POLY_G4*) nextprim;
-        SetPolyG4(poly);
-        setRGB0(poly, 255,   0, 255);
-        setRGB1(poly, 255, 255,   0);
-        setRGB2(poly,   0, 255, 255);
-        setRGB3(poly,   0, 255,   0);
-        //otz = 0;
-        //otz += RotTransPers(&vertices[faces[i]],     (long*) &poly->x0, &p, &flg);
-        //otz += RotTransPers(&vertices[faces[i + 1]], (long*) &poly->x1, &p, &flg);
-        //otz += RotTransPers(&vertices[faces[i + 2]], (long*) &poly->x2, &p, &flg);
-        //otz /= 3;
-        nclip = RotAverageNclip4(
-            &vertices[faces[i]], 
-            &vertices[faces[i+1]], 
-            &vertices[faces[i+2]], 
-            &vertices[faces[i+3]], 
-            (long*)&poly->x0, 
-            (long*)&poly->x1, 
-            (long*)&poly->x2, 
-            (long*)&poly->x3, 
-            &p, 
-            &otz, 
-            &flg
+    for (i = 0; i < 6; i += 3) {
+        polyf3 = (POLY_F3*) nextprim;
+        setPolyF3(polyf3);
+        setRGB0(polyf3, 255, 0, 255);
+        nclip = RotAverageNclip3(
+            &floor.vertices[floor.faces[i]],
+            &floor.vertices[floor.faces[i+1]],
+            &floor.vertices[floor.faces[i+2]],
+            (long*)&polyf3->x0,
+            (long*)&polyf3->x1,
+            (long*)&polyf3->x2,
+            &p, &otz, &flg
         );
         if (nclip <= 0) {
             continue;
         }
         if ((otz > 0) && (otz < OT_LENGTH)) {
-            addPrim(ot[currbuff][otz], poly);
+            addPrim(ot[currbuff][otz], polyf3);
+            nextprim += sizeof(POLY_F3);
+        }
+    }
+    // Update the floor rotation
+    floor.rotation.vy += 5;
+    */
+    // Update the cube position based on acceleration and velocity
+    cube.vel.vx += cube.acc.vx;
+    cube.vel.vy += cube.acc.vy;
+    cube.vel.vz += cube.acc.vz;
+    cube.position.vx += (cube.vel.vx) >> 1;
+    cube.position.vy += (cube.vel.vy) >> 1;
+    cube.position.vz += (cube.vel.vz) >> 1;
+    if (cube.position.vy + 150 > floor.position.vy) {
+        cube.vel.vy *= -1;
+        //cube.position.vy = ...;
+    }
+    // Draw the cube
+    RotMatrix(&cube.rotation, &world);
+    TransMatrix(&world, &cube.position);
+    ScaleMatrix(&world, &cube.scale);
+    SetRotMatrix(&world);
+    SetTransMatrix(&world);
+    for (i = 0; i < 6 * 4; i += 4) {
+        polyg4 = (POLY_G4*) nextprim;
+        setPolyG4(polyg4);
+        setRGB0(polyg4, 255,   0, 255);
+        setRGB1(polyg4, 255, 255,   0);
+        setRGB2(polyg4,   0, 255, 255);
+        setRGB3(polyg4,   0, 255,   0);
+        nclip = RotAverageNclip4(
+            &cube.vertices[cube.faces[i]], 
+            &cube.vertices[cube.faces[i+1]], 
+            &cube.vertices[cube.faces[i+2]], 
+            &cube.vertices[cube.faces[i+3]], 
+            (long*)&polyg4->x0, 
+            (long*)&polyg4->x1, 
+            (long*)&polyg4->x2, 
+            (long*)&polyg4->x3, 
+            &p, &otz, &flg
+        );
+        if (nclip <= 0) {
+            continue;
+        }
+        if ((otz > 0) && (otz < OT_LENGTH)) {
+            addPrim(ot[currbuff][otz], polyg4);
             nextprim += sizeof(POLY_G4);
         }
     }
-    rotation.vx += 6;
-    rotation.vy += 8;
-    rotation.vz += 12;
+    // Update cube rotation
+    cube.rotation.vx += 6;
+    cube.rotation.vy += 8;
+    cube.rotation.vz += 12;
 }
 
 

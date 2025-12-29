@@ -30,7 +30,7 @@
    [X] #15: Psy-Q Data Types
    [X] #16: Introduction to 3D Graphics
    [X] #17: The GTE Coprocessor
-   [-] #18: Fixed-Point Math
+   [X] #18: Fixed-Point Math
    [-] #19: GTE Inline Instructions
    [-] #20: Controller Input
    [-] #21: Linking Multiple Files
@@ -378,3 +378,29 @@
     + Then, we transform the vertices into world space (multiply by the world matrix)
     + The next step is to convert the vertices into camera space (multiply by view matrix)
     + The scene is now in view space and can be projected into screen space (perspective divide)
+
+  - The PS1 doesn't have native support for floating point numbers and the GTE usues 20.12 fixed-point numbers:
+    + 20.12 fixed-point bits: SIIIIIIIIIIIIIIIIIIIFFFFFFFFFFFF
+                               \              \              \
+                                Sign bit    Integer bits    Fractional bits
+    + Integer to 20.12 fixed-point number: 2^12 = 4096 = 1.0
+    + #define ONE 4096
+    + Fractional addition and subtraction:
+      + fix_num += 4096;   // += 1.0
+      + fix_num -= 4096;   // -= 1.0
+      + fix_num += 2048;   // += 0.5
+      + fix_num -= 6144;   // -= 1.5
+      + long a = 20 * ONE; // ToFixed(20)
+      + long b = 17 * ONE; // ToFixed(17)
+      + long c = a + b;    // Addition "just works"
+    + Fractional multiplication:
+      + mul = 2048;                      // mul = 0.5
+      + fix_num = (fix_num * mul) >> 12; // fix_num *= mul
+      + mul = 6144;                      // mul = 1.5
+      + fix_num = (fix_num * mul) >> 12; // fix_num *= mul
+    + Fractional division:
+      + div = 2048;                       // div = 0.5
+      + fix_num = (fix_num * 4096) / div; // fix_num /= div
+      + div = 6144;                       // div = 1.5
+      + fix_num = (fix_num * 4096) / div; // fix_num /= div
+    + Bitshifting can also be used to perform multiplication and division if multiplying/dividing by 2/4/8/etc.
