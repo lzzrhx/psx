@@ -37,7 +37,7 @@
    [X] #22: Camera Transformation
    [X] #23: CD-ROM Access
    [X] #24: Textured Polygons
-   [-] #25: Decoding Primitive Files
+   [X] #25: Decoding Primitive Files
    [-] #26: Decoding Texture Files
    [-] #28: Multiple 3D Models
    [-] #29: Loading Landscape Objects
