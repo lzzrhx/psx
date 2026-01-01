@@ -348,9 +348,10 @@ typedef struct Object {
     SVECTOR        rotation;      // Model rotation
     VECTOR         position;      // Model position
     VECTOR         scale;         // Model scale
+    struct Object* next;
 } Object;
 
-void LoadObjectPRM(Object* object, char* filename);
+Object* LoadObjectPRM(char* filename, u_short texturestart);
 void RenderObject(Object *object, Camera *camera);
 
 #endif

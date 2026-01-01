@@ -51,6 +51,16 @@ Disc CDROMXA_PSX
 						Source [GameDir]\ASSETS\COMMON\ALLSH.CMP
 					EndFile
 
+					File RESCU.PRM
+						XAFileAttributes Form1 Data
+						Source [GameDir]\ASSETS\COMMON\RESCU.PRM
+					EndFile
+
+					File RESCU.CMP
+						XAFileAttributes Form1 Data
+						Source [GameDir]\ASSETS\COMMON\RESCU.CMP
+					EndFile
+
 				EndHierarchy
 			EndPrimaryVolume
 		EndVolume

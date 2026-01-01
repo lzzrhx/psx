@@ -4,7 +4,7 @@ void VectorCross(VECTOR *a, VECTOR *b, VECTOR *out) {
     OuterProduct12(a, b, out);
 }
 
-void LookAt(Camera *camera, VECTOR *eye, VECTOR *target, VECTOR *up) {
+void LookAt(Camera* camera, VECTOR* eye, VECTOR* target, VECTOR* up) {
     VECTOR xright;
     VECTOR yup;
     VECTOR zforward;
