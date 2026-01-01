@@ -3,6 +3,7 @@
 
 #include "globals.h"
 #include "camera.h"
+#include "texture.h"
 
 #define BYTES_PER_VERTEX   16
 #define BYTES_PER_FACE     20
@@ -49,9 +50,9 @@ typedef struct Track {
     Section* sections;
 } Track;
 
-void LoadTrackVertices(Track* track, char* filename); // .TRV file
-void LoadTrackFaces(Track* track, char* filename);    // .TRF file
-void LoadTrackSections(Track* track, char* filename); // .TRS file
+void LoadTrackVertices(Track* track, char* filename);
+void LoadTrackFaces(Track* track, char* filename, u_short texturestart);
+void LoadTrackSections(Track* track, char* filename);
 void RenderTrack(Track* track, Camera* camera);
 
 #endif

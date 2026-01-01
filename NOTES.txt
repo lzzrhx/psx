@@ -42,7 +42,7 @@
    [X] #28: Multiple 3D Models
    [X] #29: Loading Landscape Objects
    [X] #30: Loading Track Faces
-   [-] #31: Loading Track Texture
+   [X] #31: Loading Track Texture
    [-] #32: Polygon Subdivision
    [-] #33: Movement & Physics
    [-] #34: Refactoring Track Visibility

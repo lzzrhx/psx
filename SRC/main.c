@@ -20,23 +20,25 @@ Track track;
 // Initialization
 ///////////////////////////////////////////////////////////////////////////////
 void Setup(void) {
-    u_short shipsstarttexture, scenestarttexture;
+    u_short shipsstarttexture, scenestarttexture, trackstarttexture;
     ScreenInit();
     CdInit();
     JoyPadInit();
     ResetNextPrim(GetCurrBuff());
     shipsstarttexture = GetTextureCount();
-    LoadTextureCMP("\\ALLSH.CMP;1");
-    //scenestarttexture = GetTextureCount();
-    //LoadTextureCMP("\\TRACK02\\SCENE.CMP;1");
+    LoadTextureCMP("\\ALLSH.CMP;1", NULL);
+    scenestarttexture = GetTextureCount();
+    LoadTextureCMP("\\TRACK02\\SCENE.CMP;1", NULL);
     ships = LoadObjectPRM("\\ALLSH.PRM;1", shipsstarttexture);
     //sceneobjs = LoadObjectPRM("\\TRACK02\\SCENE.PRM;1", scenestarttexture);
+    trackstarttexture = GetTextureCount();
+    LoadTextureCMP("\\TRACK02\\LIBRARY.CMP;1", "\\TRACK02\\LIBRARY.TTF;1");
     LoadTrackVertices(&track, "\\TRACK02\\TRACK.TRV;1");
-    LoadTrackFaces(&track, "\\TRACK02\\TRACK.TRF;1");
+    LoadTrackFaces(&track, "\\TRACK02\\TRACK.TRF;1", trackstarttexture);
     LoadTrackSections(&track, "\\TRACK02\\TRACK.TRS;1");
     ship = GetObjectByIndex(ships, 1);
     setVector(&ship->position, 32599, -347, -45310);
-    setVector(&camera.position, ship->position.vx, ship->position.vy - 250, ship->position.vz - 1200);
+    setVector(&camera.position, ship->position.vx, ship->position.vy - 350, ship->position.vz - 1200);
     camera.rotmat = (MATRIX){0};
     camera.lookat = (MATRIX){0};
 }

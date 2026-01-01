@@ -2,6 +2,10 @@
 
 static Texture* texturestore[MAX_TEXTURES];
 static u_short texturecount = 0;
+static u_short textx = 320;
+static u_short texty = 0;
+static u_short clutx = 320;
+static u_short cluty = 256;
 
 Texture* GetFromTextureStore(u_int i) {
     return texturestore[i];
@@ -11,16 +15,16 @@ u_short GetTextureCount(void) {
     return texturecount;
 }
 
-void LoadTextureCMP(char* filename) {
+void LoadTextureCMP(char* filenamecmp, char* filenamettf) {
     u_long b, i, length, totaltimsize;
     u_short numtextures;
     u_char* bytes;
     static void* timsbaseaddr;
     static long timoffsets[400];
     Texture* texture;
-    bytes = (u_char*) FileRead(filename, &length);
+    bytes = (u_char*) FileRead(filenamecmp, &length);
     if (bytes == NULL) {
-        printf("Error reading %s from the CD.\n", filename);
+        printf("Error reading %s from the CD.\n", filenamecmp);
         return;
     }
     b = 0;
@@ -46,14 +50,41 @@ void LoadTextureCMP(char* filename) {
     // Deallocate the file buffer
     free(bytes);
     // Upload all uncompressed TIM textures (and their CLUTs) to VRAM
-    for (i = 0; i < numtextures; i++) {
-        texture = UploadTextureToVRAM(timoffsets[i]);
-        if (texture != NULL) {
-            texturestore[texturecount++] = texture;
+    if (filenamettf == NULL) {
+        for (i = 0; i < numtextures; i++) {
+            texture = UploadTextureToVRAM(timoffsets[i]);
+            if (texture != NULL) {
+                texturestore[texturecount++] = texture;
+            }
+            if (texturecount > MAX_TEXTURES) {
+                printf("ERR! Texture global store is full!.\n");
+            }
         }
-        if (texturecount > MAX_TEXTURES) {
-            printf("ERR! Texture global store is full!.\n");
+    } else {
+        Tile* tiles;
+        u_short numtiles;
+        bytes = (u_char*) FileRead(filenamettf, &length);
+        if (bytes == NULL) {
+            printf("Error reading %s from the CD.\n", filenamettf);
+            return;
         }
+        numtiles = length / BYTES_PER_TILE;
+        tiles = (Tile*) malloc(numtiles * sizeof(Tile));
+        b = 0;
+        for (i = 0; i < numtiles; i++) {
+            b += 16 * 2;                                  // Bypass the hi-res tile indices
+            b += 4 * 2;                                   // Bypass the mid-res tile indices
+            tiles[i].tileindex = GetShortBE(bytes, &b);  // Load the lo-res tile indices
+            texture = UploadTextureToVRAM(timoffsets[tiles[i].tileindex]);
+            if (texture != NULL) {
+                texturestore[texturecount++] = texture;
+            }
+            if (texturecount > MAX_TEXTURES) {
+                printf("ERR! Texture global store is full!.\n");
+            }
+        }
+        free(tiles);
+        free(bytes);
     }
     // Deallocate the TIM buffer after uploading to VRAM
     free(timsbaseaddr);
@@ -71,6 +102,26 @@ Texture* UploadTextureToVRAM(long timptr) {
             tc4 = (TimClut4*) tim;
             texture = (Texture*) malloc(sizeof(Texture));
             texture->type = CLUT4;
+            // If the texture does not have texture X and Y inside the TIM data
+            // Control the texture X/Y and clut X/Y manually
+            if (!tc4->textureX && !tc4->textureY) {
+                tc4->textureX = textx;
+                tc4->textureY = texty;
+                tc4->clutX = clutx;
+                tc4->clutY = cluty;
+                tc4->clutW = 16;
+                tc4->clutH = 1;
+                clutx += 16;
+                if (clutx >= 384) {
+                    clutx = 320;
+                    cluty += 1;
+                }
+                texty += 32;
+                if (texty >= 256) {
+                    textx += 8;
+                    texty = 0;
+                }
+            }
             texture->textureX = tc4->textureX;
             texture->textureY = tc4->textureY;
             texture->textureW = tc4->textureW;

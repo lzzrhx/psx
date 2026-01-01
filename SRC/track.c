@@ -20,9 +20,10 @@ void LoadTrackVertices(Track* track, char* filename) {
     free(bytes);
 }
 
-void LoadTrackFaces(Track* track, char* filename) {
+void LoadTrackFaces(Track* track, char* filename, u_short texturestart) {
     u_long i, b, length;
     u_char* bytes;
+    Texture* texture;
     bytes = (u_char*) FileRead(filename, &length);
     if (bytes == NULL) {
         printf("Error reading %s from the CD.\n", filename);
@@ -46,6 +47,30 @@ void LoadTrackFaces(Track* track, char* filename) {
         face->color.g = GetChar(bytes, &b);
         face->color.b = GetChar(bytes, &b);
         face->color.cd = GetChar(bytes, &b);
+        face->texture += texturestart;
+        texture = GetFromTextureStore(face->texture);
+        face->tpage = texture->tpage;
+        face->clut = texture->clut;
+        if (face->flags & FACE_FLIP_TEXTURE) {
+            face->u0 = texture->u1;
+            face->v0 = texture->v1;
+            face->u1 = texture->u0;
+            face->v1 = texture->v0;
+            face->u2 = texture->u3;
+            face->v2 = texture->v3;
+            face->u3 = texture->u2;
+            face->v3 = texture->v2;
+
+        } else {
+            face->u0 = texture->u0;
+            face->v0 = texture->v0;
+            face->u1 = texture->u1;
+            face->v1 = texture->v1;
+            face->u2 = texture->u2;
+            face->v2 = texture->v2;
+            face->u3 = texture->u3;
+            face->v3 = texture->v3;
+        }
     }
     free(bytes);
 }
@@ -85,8 +110,8 @@ void RenderTrackSection(Track* track, Section* section, Camera* camera) {
     short nclip;
     long otz, p, flg;
     SVECTOR v0, v1, v2, v3;
-    LINE_F2 *line0, *line1, *line2, *line3;
-    POLY_F4* poly;
+    //LINE_F2 *line0, *line1, *line2, *line3;
+    POLY_FT4* poly;
     MATRIX worldmat;
     MATRIX viewmat;
     VECTOR pos;
@@ -105,7 +130,7 @@ void RenderTrackSection(Track* track, Section* section, Camera* camera) {
     SetTransMatrix(&viewmat);
     for (i = 0; i < section->numfaces; i++) {
         Face* face = track->faces + section->facestart + i;
-        poly = (POLY_F4*) GetNextPrim();
+        poly = (POLY_FT4*) GetNextPrim();
         v0.vx = (short) (track->vertices[face->indices[1]].vx - camera->position.vx);
         v0.vy = (short) (track->vertices[face->indices[1]].vy - camera->position.vy);
         v0.vz = (short) (track->vertices[face->indices[1]].vz - camera->position.vz);
@@ -134,50 +159,40 @@ void RenderTrackSection(Track* track, Section* section, Camera* camera) {
         gte_avsz4();
         gte_stotz(&otz);
         if (otz > 0 && otz < OT_LEN) {
-            SetPolyF4(poly);
-            facecolor = (CVECTOR) {255, 255, 255};
-            if (face->flags & FACE_FLIP_TEXTURE) {
-                facecolor.r = 255;
-                facecolor.g = 0;
-                facecolor.b = 255;
-            }
-            if (face->flags & FACE_SPEED_UP) {
-                facecolor.r = 0;
-                facecolor.g = 255;
-                facecolor.b = 255;
-            }
-            setRGB0(poly, facecolor.r, facecolor.g, facecolor.b);
+            SetPolyFT4(poly);
+            setRGB0(poly, face->color.r, face->color.g, face->color.b);
+            poly->tpage = face->tpage;
+            poly->clut = face->clut;
+            setUV4(poly, face->u0, face->v0, face->u1, face->v1, face->u2, face->v2, face->u3, face->v3);
             addPrim(GetOTAt(GetCurrBuff(), otz), poly);
-            IncrementNextPrim(sizeof(POLY_F4));
-            
+            IncrementNextPrim(sizeof(POLY_FT4));
             // Draw four lines (one for each quad edge)
+            /*
             line0 = (LINE_F2*) GetNextPrim();
             setLineF2(line0);
             setXY2(line0, poly->x0, poly->y0, poly->x1, poly->y1);
             setRGB0(line0, 255, 255, 0);
             addPrim(GetOTAt(GetCurrBuff(), 0), line0);
             IncrementNextPrim(sizeof(LINE_F2));
-
             line1 = (LINE_F2*) GetNextPrim();
             setLineF2(line1);
             setXY2(line1, poly->x1, poly->y1, poly->x3, poly->y3);
             setRGB0(line1, 255, 255, 0);
             addPrim(GetOTAt(GetCurrBuff(), 0), line1);
             IncrementNextPrim(sizeof(LINE_F2));
-
             line2 = (LINE_F2*) GetNextPrim();
             setLineF2(line2);
             setXY2(line2, poly->x3, poly->y3, poly->x2, poly->y2);
             setRGB0(line2, 255, 255, 0);
             addPrim(GetOTAt(GetCurrBuff(), 0), line2);
             IncrementNextPrim(sizeof(LINE_F2));
-
             line3 = (LINE_F2*) GetNextPrim();
             setLineF2(line3);
             setXY2(line3, poly->x2, poly->y2, poly->x0, poly->y0);
             setRGB0(line3, 255, 255, 0);
             addPrim(GetOTAt(GetCurrBuff(), 0), line3);
             IncrementNextPrim(sizeof(LINE_F2));
+            */
         }
     }
 }

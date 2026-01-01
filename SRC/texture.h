@@ -15,7 +15,8 @@
 #define TextureHOffset(x) (x & 0xFFC0)
 #define TextureVOffset(y) (y & 0x100)
 #define ClutType(t)       (t->flags & 7)
-#define MAX_TEXTURES 800
+#define MAX_TEXTURES      800
+#define BYTES_PER_TILE    42
 
 
 typedef struct Texture {
@@ -77,7 +78,11 @@ typedef struct Tim {
     long flags;
 } Tim;
 
-void LoadTextureCMP(char *filename);
+typedef struct Tile {
+    u_short tileindex;
+} Tile;
+
+void LoadTextureCMP(char* filenamecmp, char* filenamettf);
 Texture* UploadTextureToVRAM(long timptr);
 Texture* GetFromTextureStore(u_int i);
 u_short GetTextureCount(void);
