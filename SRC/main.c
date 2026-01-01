@@ -11,28 +11,29 @@
 Camera camera;
 Object* ships;
 Object* ship;
+Object* sceneobjs;
 u_short shipindex = 0;
-u_short angle = 0;
-
-int holdingright = 0;
-int holdingleft = 0;
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // Initialization
 ///////////////////////////////////////////////////////////////////////////////
 void Setup(void) {
-    u_short shipstarttexture;
-    //u_short rescuestarttexture;
+    u_short shipsstarttexture, scenestarttexture;
     ScreenInit();
     CdInit();
     JoyPadInit();
-    ResetNextPrim(GetCurrBuff());    
-    setVector(&camera.position, 500, -1000, -1200);
-    camera.lookat = (MATRIX){0};
-    shipstarttexture = GetTextureCount();
+    ResetNextPrim(GetCurrBuff());
+    shipsstarttexture = GetTextureCount();
     LoadTextureCMP("\\ALLSH.CMP;1");
-    ships = LoadObjectPRM("\\ALLSH.PRM;1", shipstarttexture);
+    scenestarttexture = GetTextureCount();
+    LoadTextureCMP("\\TRACK02\\SCENE.CMP;1");
+    ships = LoadObjectPRM("\\ALLSH.PRM;1", shipsstarttexture);
+    sceneobjs = LoadObjectPRM("\\TRACK02\\SCENE.PRM;1", scenestarttexture);
+    ship = GetObjectByIndex(ships, shipindex);
+    setVector(&ship->position, 32599, -347, -45310);
+    setVector(&camera.position, ship->position.vx, ship->position.vy - 100, ship->position.vz - 1000);
+    camera.lookat = (MATRIX){0};
 }
 
 
@@ -44,28 +45,19 @@ void Update(void) {
     EmptyOT(GetCurrBuff());
     JoyPadUpdate();
     if (JoyPadCheck(PAD1_LEFT)) {
-        if (shipindex > 0 && !holdingleft) {
-            shipindex--;
-        }
-        holdingleft = 1;
-    } else {
-        holdingleft = 0;
+        camera.position.vx -= 100;
     }
     if (JoyPadCheck(PAD1_RIGHT)) {
-        if (shipindex < 7 && !holdingright) {
-            shipindex++;
-        }
-        holdingright = 1;
-    } else {
-        holdingright = 0;
+        camera.position.vx += 100;
     }
-    ship = ships;
-    for (i = 0; i < shipindex; i++) {
-        ship = ship->next;
+    if (JoyPadCheck(PAD1_UP)) {
+        camera.position.vy -= 100;
     }
-    angle += 10;
-    ship->rotation.vy = angle;
+    if (JoyPadCheck(PAD1_DOWN)) {
+        camera.position.vy += 100;
+    }
     LookAt(&camera, &camera.position, &ship->position, &(VECTOR){0, -ONE, 0});
+    RenderSceneObjects(sceneobjs, &camera);
     RenderObject(ship, &camera);
 }
 

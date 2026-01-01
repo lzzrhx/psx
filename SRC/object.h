@@ -352,6 +352,8 @@ typedef struct Object {
 } Object;
 
 Object* LoadObjectPRM(char* filename, u_short texturestart);
-void RenderObject(Object *object, Camera *camera);
+Object* GetObjectByIndex(Object* list, u_short index);
+void RenderObject(Object* object, Camera* camera);
+void RenderSceneObjects(Object* list, Camera* camera);
 
 #endif

@@ -40,7 +40,7 @@
    [X] #25: Decoding Primitive Files
    [X] #26: Decoding Texture Files
    [X] #28: Multiple 3D Models
-   [-] #29: Loading Landscape Objects
+   [X] #29: Loading Landscape Objects
    [-] #30: Loading Track Faces
    [-] #31: Loading Track Texture
    [-] #32: Polygon Subdivision
