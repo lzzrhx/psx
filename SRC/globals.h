@@ -8,6 +8,7 @@
 #include <libgte.h>
 #include <libetc.h>
 #include <libgpu.h>
+#include <libspu.h>
 #include <libcd.h>
 #include "inline_n.h"
 #include "lzss.h"

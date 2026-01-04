@@ -1,0 +1,14 @@
+////////////////////////////////////////////////////////////////////////////////
+// TODO
+////////////////////////////////////////////////////////////////////////////////
+
+ - Collision detection
+ - Improve physics: Better ship to track "attachment" (remove pitch controls)
+ - Add sprite rendering
+ - Add skybox
+ - Improve performance
+ - Reduce T-junction aritfacts
+ - Add lighting
+ - Add track junctions
+ - Add GUI
+ - Add speedup "powerup"

@@ -8,12 +8,17 @@
 #include "utils.h"
 #include "track.h"
 #include "ship.h"
+#include "sound.h"
 
 
 Camera camera;
 Object* ships;
 Ship ship;
 Track track;
+char *sfx3, *sfx2, *sfx1, *sfxgo;
+u_long sfx3length, sfx2length, sfx1length, sfxgolength;
+u_long ticks;
+int isracing;
 //Object* sceneobjs;
 
 
@@ -21,8 +26,12 @@ Track track;
 // Initialization
 ///////////////////////////////////////////////////////////////////////////////
 void Setup(void) {
+    u_long sfxlength;
     u_short shipsstarttexture, scenestarttexture, trackstarttexture;
     VECTOR startpos;
+    ticks = 0;
+    isracing = 0;
+    SoundInit();
     ScreenInit();
     CdInit();
     JoyPadInit();
@@ -44,6 +53,15 @@ void Setup(void) {
     setVector(&camera.position, ship.object->position.vx, ship.object->position.vy - 350, ship.object->position.vz - 1200);
     camera.rotmat = (MATRIX){0};
     camera.lookat = (MATRIX){0};
+    // Load countdown sound effects
+    sfx3  = LoadVAGSound("\\COUNT3.VAG;1", &sfx3length);
+    sfx2  = LoadVAGSound("\\COUNT2.VAG;1", &sfx2length);
+    sfx1  = LoadVAGSound("\\COUNT1.VAG;1", &sfx1length);
+    sfxgo = LoadVAGSound("\\COUNTGO.VAG;1", &sfxgolength);
+    TransferVAGToSpu(sfx3, sfx3length, SPU_0CH);
+    TransferVAGToSpu(sfx2, sfx2length, SPU_1CH);
+    TransferVAGToSpu(sfx1, sfx1length, SPU_2CH);
+    TransferVAGToSpu(sfxgo, sfxgolength, SPU_3CH);
 }
 
 
@@ -55,6 +73,19 @@ void Update(void) {
     VECTOR up = (VECTOR){0, -ONE, 0};
     EmptyOT(GetCurrBuff());
     JoyPadUpdate();
+    if (!isracing) {
+        switch (ticks) {
+            case  0: AudioPlay(SPU_0CH); break;
+            case 30: AudioPlay(SPU_1CH); break;
+            case 60: AudioPlay(SPU_2CH); break;
+            case 90:
+                AudioPlay(SPU_3CH);
+                PlayAudioTrack(2);
+                isracing = 1;
+                break;
+        }
+    }
+    ticks++;
     if (JoyPadCheck(PAD1_LEFT)) {
         if (ship.velyaw <= 0) {
             ship.velyaw -= 128;
@@ -93,6 +124,11 @@ void Update(void) {
         ship.thrustmag = ship.thrustmax;
     }
     ShipUpdate(&ship);
+    if (!isracing) {
+        ship.vel.vx = 0;
+        ship.vel.vy = 0;
+        ship.vel.vz = 0;
+    }
     camera.position.vx = ship.object->position.vx - (ship.forward.vx >> 2) + (up.vx >> 3);
     camera.position.vy = ship.object->position.vy - (ship.forward.vy >> 2) + (up.vy >> 3);
     camera.position.vz = ship.object->position.vz - (ship.forward.vz >> 2) + (up.vz >> 3);

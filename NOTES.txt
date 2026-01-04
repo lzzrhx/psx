@@ -46,9 +46,9 @@
    [X] #32: Polygon Subdivision
    [X] #33: Movement & Physics
    [X] #34: Refactoring Track Visibility
-   [X] #35: Attracting & Track
-   [-] #36: Audio
-   [-] #37: Conclusion
+   [X] #35: Attracting Ship & Track
+   [X] #36: Audio
+   [X] #37: Conclusion
 
    [X] COMPLETED / [-] NOT COMPLETED
 
